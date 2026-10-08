@@ -1,5 +1,6 @@
 // Diario de Estudio — v1
 // Todo el estado vive en localStorage; no hay servidor.
+import { calcularRacha, fechaLocal, formatearFecha } from './study-logic.js';
 
 // ============================================================
 // Almacenamiento (localStorage)
@@ -21,58 +22,6 @@ function cargarSesiones() {
 
 function guardarSesiones(sesiones) {
   localStorage.setItem(CLAVE_STORAGE, JSON.stringify(sesiones));
-}
-
-// ============================================================
-// Fechas en hora local (nunca UTC)
-// ============================================================
-
-// Convierte un Date a "YYYY-MM-DD" usando la hora local del usuario.
-function fechaLocal(date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-// Suma (o resta) días a una fecha "YYYY-MM-DD" y devuelve "YYYY-MM-DD".
-function sumarDias(fecha, dias) {
-  const [y, m, d] = fecha.split('-').map(Number);
-  return fechaLocal(new Date(y, m - 1, d + dias));
-}
-
-// "2026-10-08" -> "Miércoles, 8 de octubre"
-function formatearFecha(fecha) {
-  const [y, m, d] = fecha.split('-').map(Number);
-  const texto = new Date(y, m - 1, d).toLocaleDateString('es-ES', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
-  return texto.charAt(0).toUpperCase() + texto.slice(1);
-}
-
-// ============================================================
-// Racha
-// ============================================================
-
-function calcularRacha(sesiones) {
-  const fechasConSesion = new Set(sesiones.map((sesion) => sesion.fecha));
-
-  let fecha = fechaLocal(new Date()); // hoy
-
-  // Si hoy todavía no hay sesión, la racha sigue viva: empezamos desde ayer.
-  if (!fechasConSesion.has(fecha)) {
-    fecha = sumarDias(fecha, -1);
-  }
-
-  // Contamos días consecutivos hacia atrás mientras haya sesión.
-  let racha = 0;
-  while (fechasConSesion.has(fecha)) {
-    racha += 1;
-    fecha = sumarDias(fecha, -1);
-  }
-  return racha;
 }
 
 // ============================================================
